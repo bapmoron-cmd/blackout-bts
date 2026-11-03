@@ -71,12 +71,17 @@ function currentIndex(){
 }
 function closeTaunt(){
  if(!modal)return;
+ const {mission,question}=currentIndex();
  modal.remove();
  modal=null;
  document.body.classList.remove('taunt-open');
- // Donner accès au corrigé original après la réplique.
- const feedback=$('.feedback.bad');
- if(feedback)feedback.scrollIntoView({behavior:'smooth',block:'nearest'});
+ // Après chaque erreur, L'Ombre impose l'étude d'une fiche et son contrôle de compréhension.
+ if(window.BLACKOUT_PEDAGOGY?.openForError){
+   window.BLACKOUT_PEDAGOGY.openForError(mission,question);
+ }else{
+   const feedback=$('.feedback.bad');
+   if(feedback)feedback.scrollIntoView({behavior:'smooth',block:'nearest'});
+ }
 }
 function showTaunt(){
  if(modal||!$('.feedback.bad'))return;
@@ -90,8 +95,9 @@ function showTaunt(){
   +'<h2 id="taunt-title">MAUVAISE RÉPONSE !</h2>'
   +'<p class="taunt-speaker">L’OMBRE <span>· Saboteur présumé</span></p>'
   +'<div id="taunt-dialogue" class="taunt-speech"><span class="taunt-quote">«</span>'+escapeHtml(line)+'<span class="taunt-quote">»</span></div>'
-  +'<p class="taunt-remind">Ton erreur ne restera pas secrète… mais le corrigé technique t’attend juste derrière.</p>'
-  +'<button type="button" class="taunt-close btn">⚡ Je reprends l’enquête</button>'
+  +(window.BLACKOUT_GAME?.getStatus?.()?.pendingRewind?'<div class="taunt-remind" style="color:#ffd18d;font-weight:900;border:1px solid #f0803b;padding:9px;border-radius:7px">⚠ TROIS ERREURS DE SUITE ! Après le contrôle de lecture, tu retourneras à une mission précédente. L’Ombre a gagné cette manche.</div>':'')
+  +'<p class="taunt-remind">Tu vas lire une fiche technique et répondre à une question de compréhension avant de reprendre l’enquête.</p>'
+  +'<button type="button" class="taunt-close btn">📖 Ouvrir la fiche de cours</button>'
   +'</div></section>';
  document.body.appendChild(modal);
  document.body.classList.add('taunt-open');

@@ -95,7 +95,7 @@ function showTaunt(){
   +'<h2 id="taunt-title">MAUVAISE RÉPONSE !</h2>'
   +'<p class="taunt-speaker">L’OMBRE <span>· Saboteur présumé</span></p>'
   +'<div id="taunt-dialogue" class="taunt-speech"><span class="taunt-quote">«</span>'+escapeHtml(line)+'<span class="taunt-quote">»</span></div>'
-  +(window.BLACKOUT_GAME?.getStatus?.()?.pendingRewind?'<div class="taunt-remind" style="color:#ffd18d;font-weight:900;border:1px solid #f0803b;padding:9px;border-radius:7px">⚠ TROIS ERREURS DE SUITE ! Après le contrôle de lecture, tu retourneras à une mission précédente. L’Ombre a gagné cette manche.</div>':'')
+  +(window.BLACKOUT_GAME?.getStatus?.()?.pendingRewind?'<div class="taunt-remind" style="color:#ffd18d;font-weight:900;border:1px solid #f0803b;padding:9px;border-radius:7px">⚠ TROIS ERREURS DE SUITE ! Après le contrôle de lecture, tu devras rejouer une mission. L’Ombre a gagné cette manche.</div>':'')
   +'<p class="taunt-remind">Tu vas lire une fiche technique et répondre à une question de compréhension avant de reprendre l’enquête.</p>'
   +'<button type="button" class="taunt-close btn">📖 Ouvrir la fiche de cours</button>'
   +'</div></section>';

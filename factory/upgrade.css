@@ -1,0 +1,34 @@
+/* BLACKOUT FACTORY V2 — PIÈCES D'ENQUÊTE CINÉMATIQUES */
+.evidenceGrid{align-items:stretch;gap:13px}
+.evidence.evidenceUpgraded{display:flex;flex-direction:column;align-items:stretch;min-height:190px;padding:8px 8px 12px;position:relative;overflow:hidden;border:1px solid #88633b;background:linear-gradient(165deg,#22364a,#0b1624);box-shadow:inset 0 0 0 1px #ffffff0d,0 9px 24px #030a12a6;transition:transform .17s,border-color .17s,box-shadow .17s}
+.evidence.evidenceUpgraded:hover{transform:translateY(-3px);border-color:#ffbe65;box-shadow:0 0 22px #ff92332d}
+.evidence.evidenceUpgraded.seen{border-color:#ca8e45}
+.evidence.evidenceUpgraded .ico.evidenceIconUpgraded{display:block;flex:0 0 auto;width:100%;height:112px;border-radius:7px;background-image:url('./assets/evidence-sprite.webp');background-repeat:no-repeat;background-size:600% 300%;background-position:var(--sprite-x) var(--sprite-y);border:1px solid #617385;box-shadow:inset 0 0 16px #050b1b4a}
+.evidence.evidenceUpgraded b{font-size:14px;line-height:1.2;margin:10px 4px 3px;color:#f9ead5}
+.evidence.evidenceUpgraded small{margin:2px 4px 0;font-size:12px;color:#aac9d8}
+.evidence.evidenceUpgraded.seen small{color:#a0efc7}
+@media(max-width:620px){
+ .evidence.evidenceUpgraded{min-height:150px}
+ .evidence.evidenceUpgraded .ico.evidenceIconUpgraded{height:120px}
+}
+/* Saboteur : fenêtre après chaque erreur, sans masquer définitivement le corrigé. */
+body.taunt-open{overflow:hidden}
+.taunt-overlay{position:fixed;z-index:9999;inset:0;display:grid;place-items:center;padding:18px;background:#03060eef;backdrop-filter:blur(9px);animation:tauntFade .18s ease-out}
+.taunt-panel{width:min(880px,100%);min-height:410px;max-height:min(92vh,780px);display:grid;grid-template-columns:minmax(220px,39%) minmax(0,1fr);border:2px solid #ee4a3f;border-radius:18px;background:linear-gradient(155deg,#2d151b,#100f1b 56%,#10202f);box-shadow:0 0 0 6px #c235291e,0 0 52px #e5362e6b,0 20px 60px #000e;overflow:hidden;position:relative;animation:tauntDrop .22s cubic-bezier(.2,1.5,.45,1)}
+.taunt-panel:before{content:'';position:absolute;top:0;left:0;right:0;height:8px;background:repeating-linear-gradient(125deg,#ee5932 0 26px,#1c1d2a 26px 44px);z-index:2}
+.taunt-photo{min-height:410px;position:relative;background:#230f15 url('./assets/ombre.webp') center 31%/cover no-repeat;border-right:1px solid #d84f46}
+.taunt-photo:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#180d1de0 0,transparent 50%)}
+.taunt-photo-label{position:absolute;z-index:1;bottom:18px;left:16px;right:15px;font-size:11px;letter-spacing:1.8px;font-weight:900;color:#ffd9ae;text-shadow:0 2px 5px #000}
+.taunt-content{padding:34px 28px 28px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.taunt-alert{color:#ffc77e;font-size:11px;font-weight:900;letter-spacing:1.6px;border-bottom:1px solid #953a3b;padding-bottom:9px;width:100%}
+.taunt-content h2{font:900 clamp(30px,4vw,52px)/.97 'Barlow Condensed',Impact,sans-serif;color:#ff6562;letter-spacing:.4px;margin:8px 0 4px;text-shadow:0 3px 20px #ff292955}
+.taunt-speaker{font-weight:900;color:#ffbf90;font-size:17px;margin:0}
+.taunt-speaker span{color:#93a8ba;font-weight:500;font-size:12px}
+.taunt-speech{font-weight:650;font-size:clamp(17px,2.1vw,22px);line-height:1.42;background:#0c1726db;border:1px solid #bc433d;border-radius:12px;padding:16px;box-shadow:inset 0 0 24px #cc2d1a17;color:#ffede6;position:relative}
+.taunt-quote{color:#ffb06f;font-size:1.25em;font-weight:900}
+.taunt-remind{font-size:12px;color:#b3bdca;line-height:1.4;margin:0}
+.taunt-close{margin-top:auto;background:linear-gradient(180deg,#ff845e,#e54031);box-shadow:0 4px 0 #8c241f,0 6px 24px #bb171849;color:white}
+@keyframes tauntFade{from{opacity:0}to{opacity:1}}
+@keyframes tauntDrop{from{transform:scale(.94) translateY(22px)}to{transform:scale(1) translateY(0)}}
+@media(max-width:700px){.taunt-panel{grid-template-columns:1fr;min-height:0;overflow:auto}.taunt-photo{min-height:170px;background-position:center 35%;border-right:0;border-bottom:1px solid #d84f46}.taunt-photo-label{bottom:8px}.taunt-content{padding:18px;gap:9px}.taunt-content h2{font-size:35px}.taunt-speech{font-size:17px}.taunt-close{margin-top:12px;width:100%}}
+@media(prefers-reduced-motion:reduce){.taunt-overlay,.taunt-panel{animation:none}}

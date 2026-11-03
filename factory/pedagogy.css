@@ -1,0 +1,54 @@
+/* BLACKOUT FACTORY — Parcours de remédiation pédagogique */
+body.course-locked{overflow:hidden}
+.course-overlay{position:fixed;z-index:10010;inset:0;background:#050a12ec;backdrop-filter:blur(9px);display:grid;place-items:center;padding:18px;animation:courseCome .18s ease-out}
+.course-shell{width:min(1130px,100%);max-height:95vh;overflow:auto;overscroll-behavior:contain;border:2px solid #f9a448;background:#101c2d;box-shadow:0 0 70px #f1782540,0 30px 70px #000c;border-radius:18px}
+.course-page{background:radial-gradient(ellipse at 80% -15%,#24445a 0,transparent 65%),#0d1928;color:#edf5fb}
+.course-banner{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 23px;background:repeating-linear-gradient(125deg,#263040 0 38px,#303540 38px 72px);border-bottom:4px solid #e98a3e}
+.course-banner span{font-size:12px;color:#ffddaf;font-weight:900;letter-spacing:1.4px}
+.course-exit{border:1px solid #b78b5f;border-radius:7px;background:#1a2737;color:#e7eef5;min-height:36px;min-width:42px;font-weight:800}
+.course-inner{display:grid;grid-template-columns:minmax(220px,29%) 1fr}
+.course-aside{padding:18px;background:linear-gradient(165deg,#23344a 0,#131b29 65%,#241b20);border-right:1px solid #46586a;display:flex;flex-direction:column;gap:15px}
+.course-image{width:100%;aspect-ratio:5/3;border:1px solid #ab8055;border-radius:10px;background:url('./assets/evidence-sprite.webp') var(--course-x) var(--course-y)/600% 300% no-repeat #142334;box-shadow:0 10px 25px #0009}
+.course-source{border-radius:8px;border:1px solid #5b7790;background:#172b3b;padding:13px;color:#b9d6e3;font-weight:750;font-size:12px;line-height:1.6;letter-spacing:.8px}
+.course-source b{color:#ffbe7b;font-size:14px}
+.course-avatar{object-fit:cover;object-position:center 18%;height:130px;width:100%;border:1px solid #9b603f;border-radius:10px}
+.course-large-avatar{object-fit:cover;object-position:center 30%;width:100%;max-height:460px;min-height:260px;border:2px solid #e15844;border-radius:10px}
+.course-character{font-size:14px;line-height:1.5;font-weight:650;color:#ffd1a7;margin:0;background:#2a2430;padding:13px;border-left:3px solid #ef853b;border-radius:8px}
+.course-main{padding:26px 30px 28px;line-height:1.6}
+.course-kicker{color:#f3a65a;font-size:12px;letter-spacing:1.4px;font-weight:900;margin-bottom:7px}
+.course-main h2{font-family:'Barlow Condensed',Impact,sans-serif;font-size:clamp(32px,4vw,50px);line-height:1.1;letter-spacing:.15px;margin:0 0 13px;color:#fff3e5}
+.course-main h3{font-family:'Barlow Condensed',Impact,sans-serif;font-size:26px;margin:18px 0 10px}
+.course-lead{font-size:17px;line-height:1.55;color:#d0e1ea}
+.course-formula{padding:13px 17px;border-radius:9px;border:1px solid #ef9e56;background:#302b27;margin:17px 0}
+.course-formula>div{color:#ffc38b;font-weight:850;font-size:11px;letter-spacing:1.3px}
+.course-formula strong{font-size:19px;color:#fff6e1;display:block;margin-top:5px}
+.course-main ol{margin:8px 0 0;padding-left:26px}
+.course-main li{padding-left:5px;margin-bottom:8px}
+.course-example{margin-top:17px;padding:14px 16px;background:#173b35;border-left:4px solid #49be9a;border-radius:8px}
+.course-example b{color:#b9f6d1;font-size:12px;letter-spacing:.7px}
+.course-example p,.course-tip p{margin:6px 0 0}
+.course-tip{margin-top:13px;padding:12px 16px;background:#31231e;border-left:4px solid #f1ac65;border-radius:8px}
+.course-tip b{color:#ffd2a4;font-size:12px;letter-spacing:.7px}
+.course-footer{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:23px;border-top:1px solid #344b63;padding-top:17px;flex-wrap:wrap}
+.course-footer span{color:#91aebf;font-size:11px;flex:1;max-width:350px}
+.course-footer .btn{white-space:normal;text-align:center}
+.course-check{padding:19px 18px;background:#0b1827;border:1px solid #507089;border-radius:12px}
+.course-check h3{margin:0 0 18px;font-size:26px;text-transform:none}
+.course-options{display:grid;gap:9px}
+.course-option{width:100%;min-height:51px;display:flex;align-items:center;text-align:left;gap:12px;border-radius:9px;border:1px solid #42637e;background:#1a3045;color:#edf7ff;padding:11px}
+.course-option.selected{border-color:#f6b768;background:#3e3b38}
+.course-option:hover:not(:disabled){border-color:#ffae59}
+.course-option b{width:29px;height:29px;flex:none;display:grid;place-items:center;border:1px solid #73879c;border-radius:6px;color:#ffd18d}
+.course-fail{border:1px solid #d6644a;border-radius:7px;background:#4b2b2a;padding:12px;color:#ffd4c2;margin-top:12px}
+.course-pass{border:1px solid #39946e;border-radius:7px;background:#174133;padding:12px;color:#c0ffdd;margin-top:12px}
+@keyframes courseCome{from{opacity:0}to{opacity:1}}
+@media(max-width:760px){
+ .course-overlay{padding:7px}.course-shell{max-height:97vh}
+ .course-inner{grid-template-columns:1fr}.course-aside{display:grid;grid-template-columns:85px 1fr;gap:9px;padding:12px;border-right:0;border-bottom:1px solid #526075}
+ .course-aside .course-image{height:77px;aspect-ratio:auto}.course-aside .course-source{min-height:77px}
+ .course-aside .course-avatar{display:none}.course-aside .course-character{grid-column:1/-1;font-size:12px}
+ .course-aside .course-large-avatar{height:90px;min-height:0;object-position:center 28%}.course-aside:has(.course-large-avatar){grid-template-columns:90px 1fr}
+ .course-main{padding:17px}.course-main h2{font-size:34px}.course-main h3{font-size:23px}.course-lead{font-size:15px}
+ .course-main .course-footer{align-items:stretch}.course-main .course-footer .btn{width:100%}
+}
+@media(prefers-reduced-motion:reduce){.course-overlay{animation:none}}

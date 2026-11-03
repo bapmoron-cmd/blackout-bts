@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 370 420" role="img" aria-label="Portrait illustré de Karim Forge">
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#193d59"/><stop offset=".5" stop-color="#1a1f2b"/><stop offset="1" stop-color="#4c261f"/></linearGradient>
+<linearGradient id="j" x2="0" y2="1"><stop stop-color="#294558"/><stop offset="1" stop-color="#111d2c"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#fa813e" stop-opacity=".65"/><stop offset="1" stop-color="#fa813e" stop-opacity="0"/></radialGradient></defs>
+<rect width="370" height="420" fill="url(#bg)"/><path d="M0 40H370M0 135H370M0 220H370M40 0V420M160 0V420M320 0V420" stroke="#52748d" opacity=".25" stroke-width="5"/>
+<circle cx="330" cy="105" r="145" fill="url(#glow)"/>
+<path d="M0 145L370 125M0 174L370 160" stroke="#d57842" opacity=".42" stroke-width="10"/>
+<g stroke="#6a8193" stroke-width="8" fill="none"><rect x="10" y="80" width="59" height="105"/><rect x="298" y="34" width="60" height="158"/><path d="M30 108H58M309 65H348M309 98H348"/></g>
+<path d="M66 420Q86 282 190 278Q294 284 316 420Z" fill="url(#j)" stroke="#4b687d" stroke-width="6"/>
+<path d="M108 310L147 309L167 420H141ZM256 307L230 310L212 420H241Z" fill="#86acc5" opacity=".86"/>
+<path d="M172 285L170 320L210 321L207 279Z" fill="#c68d6d"/>
+<ellipse cx="190" cy="171" rx="69" ry="91" fill="#c68d6d"/>
+<path d="M129 130Q116 61 173 51Q234 37 259 113L245 128Q231 98 199 98Q149 99 146 136Z" fill="#464247" stroke="#464247" stroke-width="8"/>
+<path d='M141 208Q152 272 194 269Q245 269 250 210Q224 244 195 246Q159 242 141 208Z' fill='#5f4943'/>
+<path d="M153 165Q165 159 176 164M208 165Q225 161 239 168" stroke="#43342f" stroke-width="6" stroke-linecap="round" fill="none"/>
+<ellipse cx="167" cy="181" rx="4" ry="5" fill="#242a35"/><ellipse cx="222" cy="181" rx="4" ry="5" fill="#242a35"/>
+<path d="M181 225Q196 236 212 223" stroke="#7a5043" stroke-width="4" fill="none"/>
+
+
+<path d='M122 336l60-32 10 21-61 32z' fill='#eae8d9'/><path d='M125 336l72-34' stroke='#b5a27f' stroke-width='4'/>
+<rect x="78" y="368" width="218" height="38" rx="7" fill="#09141e" opacity=".9" stroke="#86acc5" stroke-width="2"/>
+<text x="187" y="394" fill="#fff2dc" font-family="Arial,sans-serif" font-size="22" font-weight="900" text-anchor="middle">KARIM FORGE</text>
+</svg>

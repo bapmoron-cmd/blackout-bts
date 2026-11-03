@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 560" role="img" aria-label="Usine Atlas en pleine panne électrique">
+<defs><linearGradient id="n" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0b1b32"/><stop offset=".55" stop-color="#09253d"/><stop offset="1" stop-color="#4e1c18"/></linearGradient><radialGradient id="red"><stop stop-color="#fa3d2c" stop-opacity=".9"/><stop offset="1" stop-color="#fa3322" stop-opacity="0"/></radialGradient><radialGradient id="beam"><stop stop-color="#fff1b2" stop-opacity=".87"/><stop offset="1" stop-color="#fff2bb" stop-opacity="0"/></radialGradient></defs>
+<rect width="1400" height="560" fill="url(#n)"/><circle cx="1050" cy="180" r="440" fill="url(#red)"/>
+<path d="M0 70H1400M0 180H1400M0 390H1400M130 0V560M475 0V560M875 0V560M1270 0V560" stroke="#5b8195" stroke-width="15" opacity=".16"/>
+<path d="M0 90h1400M0 115h1400M0 300h1400" stroke="#5d6e7c" stroke-width="9" opacity=".4"/>
+<g fill="#203447" stroke="#7d8994" stroke-width="6"><rect x="735" y="195" width="250" height="315"/><rect x="1010" y="170" width="230" height="350"/><rect x="1260" y="125" width="120" height="390"/></g>
+<g fill="#30495b" stroke="#b9b8a2" stroke-width="3"><rect x="760" y="229" width="188" height="65"/><rect x="760" y="312" width="188" height="80"/><rect x="1038" y="209" width="177" height="51"/><rect x="1038" y="282" width="177" height="81"/><rect x="1280" y="155" width="82" height="140"/></g>
+<g fill="#dde3e8"><rect x="775" y="240" width="24" height="48"/><rect x="809" y="240" width="24" height="48"/><rect x="842" y="240" width="24" height="48"/><rect x="875" y="240" width="24" height="48"/><rect x="1063" y="220" width="28" height="33"/><rect x="1106" y="220" width="28" height="33"/><rect x="1148" y="220" width="28" height="33"/></g>
+<g stroke="#ed8735" stroke-width="11" fill="none"><path d="M762 428Q850 435 877 510"/><path d="M800 427Q879 449 910 510"/><path d="M1040 398Q1150 435 1150 515"/></g>
+<circle cx="1120" cy="92" r="34" fill="#fa452f"/><circle cx="1120" cy="92" r="86" fill="url(#red)"/>
+<path d="M900 0V200M950 0V220M1000 0V160" stroke="#9a653e" stroke-width="14" stroke-dasharray="16 7"/>
+<path d="M300 560Q380 373 475 365Q540 365 615 560Z" fill="#132333" stroke="#58718a" stroke-width="5"/>
+<circle cx="465" cy="317" r="54" fill="#ca9576"/><path d="M405 299Q414 236 463 242Q528 236 524 306L502 291Q463 271 425 303Z" fill="#201a1f"/>
+<path d="M425 420L500 420L517 560H398Z" fill="#21354c"/><path d="M405 432L433 420L448 560H410M493 418L510 433L523 560H492" fill="#fa8b34"/>
+<path d="M490 465L615 510L890 350L622 543Z" fill="url(#beam)" opacity=".6"/>
+<path d="M342 534L402 455" stroke="#fa9c4d" stroke-width="30"/><circle cx="402" cy="455" r="24" fill="#fff7ca"/><circle cx="402" cy="455" r="80" fill="url(#beam)"/>
+<path d="M610 555Q655 375 690 365Q740 362 780 555Z" fill="#162333" opacity=".95"/><circle cx="700" cy="324" r="43" fill="#3b302f"/>
+<path d="M0 535h1400" stroke="#ff8f2e" stroke-width="18" stroke-dasharray="90 35" opacity=".8"/>
+</svg>

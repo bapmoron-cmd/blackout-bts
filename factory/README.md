@@ -38,3 +38,18 @@ Si une erreur 404 apparaît, aller dans le dépôt > Settings > Pages > Build an
 - Ajouter une banque d'énigmes et des variantes par groupe.
 
 **Conception :** scénario fictif, valeurs techniques des exercices explicitement indiquées ; toute remise sous tension réelle exige la procédure et l'habilitation appropriées.
+
+
+## Nouveau dans la V3 : fiches de cours et malus narratif
+
+- Dans **chaque pièce d'indice**, cliquer sur « Ouvrir la fiche de cours » pour afficher un rappel contextualisé, un exemple, les étapes de méthode et les numéros de diapositives correspondants.
+- **18 fiches de cours** couvrent les 6 missions (3 fiches par mission).
+- **Chaque mauvaise réponse** déclenche la réplique de l'Ombre, puis un rappel de cours et **une question de compréhension non notée**.
+- Le joueur doit réussir la question de lecture pour poursuivre sa mission. Les tentatives de lecture ne sont **pas comptées** parmi les erreurs de l'enquête.
+- Les **3 erreurs consécutives sur les défis notés** déclenchent un malus : retour à la mission précédente (ou début de la mission 1 si le joueur s'y trouve déjà).
+- Le score est recalculé en retirant les points de toutes les missions à refaire. Il est impossible de doubler les points en rejouant les questions.
+- Une bonne réponse à un défi noté remet la série d'erreurs à zéro.
+- Les trois erreurs doivent être consécutives **sur les questions principales**, même si elles sont dans des missions différentes.
+- Les commentaires du saboteur sont volontairement caricaturaux et appartiennent à la fiction ; ils ne remplacent jamais le corrigé technique.
+
+En cas de version précédente conservée par le navigateur, ouvrir la page avec \`?v=4\` ou actualiser le cache (Ctrl + F5).

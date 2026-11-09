@@ -46,24 +46,37 @@ function beginExam(){if(exam?.startedAt)return;const student=$('studentName').va
 function dismissTimeAlert(){$('timeAlert').classList.remove('visible')}function showTimeWarning(minutes){$('alertTitle').textContent='⏰ Plus que '+minutes+' minutes';$('alertMessage').textContent=minutes===5?'Termine tes réponses et vérifie les questions marquées à revoir.':'Le compte à rebours continue. Pense à tes questions en attente.';$('timeAlert').classList.add('visible')}function accumulateTime(){if(!exam?.startedAt||exam.finishedAt||!exam.trackingAt)return;const now=Math.min(Date.now(),exam.startedAt+EXAM_MS),delta=Math.max(0,now-exam.trackingAt);if(!exam.timeByQuestion)exam.timeByQuestion={};const key=qs[exam.trackingIndex||0]?.id;if(key&&delta>0)exam.timeByQuestion[key]=(exam.timeByQuestion[key]||0)+delta;exam.trackingAt=Date.now();saveExam()}function switchTrackedQuestion(i){accumulateTime();exam.trackingIndex=i;exam.trackingAt=Date.now();saveExam()}function setTrackingVisibility(){if(!exam?.startedAt||exam.finishedAt)return;if(document.hidden){accumulateTime();exam.trackingAt=null;saveExam()}else{exam.trackingIndex=state.idx;exam.trackingAt=Date.now();saveExam()}}function tickClock(){if(!exam?.startedAt){$('examClock').textContent='03:00:00';return}if(!exam.finishedAt&&Date.now()>=exam.startedAt+EXAM_MS){finishExam(true);return}const remaining=exam.finishedAt?0:Math.max(0,exam.startedAt+EXAM_MS-Date.now());if(!exam.finishedAt){if(!exam.warningShown)exam.warningShown=[];for(const minutes of [30,15,5]){if(remaining<=minutes*60000&&!exam.warningShown.includes(minutes)){exam.warningShown.push(minutes);saveExam();showTimeWarning(minutes)}}if(!document.hidden&&exam.trackingAt&&Date.now()-exam.trackingAt>=10000)accumulateTime()}$('examClock').textContent=exam.finishedAt?'TERMINÉ':clockText(remaining);$('timerPill').classList.toggle('urgent',!exam.finishedAt&&remaining<=600000)}
 function syncExamUI(){document.body.className=!exam?.startedAt?'exam-pending':exam.finishedAt?'exam-finished':'exam-active';if(exam?.finishedAt)renderExamReport();tickClock()}
 function finishExam(expired){if(!exam?.startedAt||exam.finishedAt)return;if(!expired&&!confirm('Rendre ta copie définitivement ? Les questions non répondues vaudront 0 point.'))return;captureDraft();accumulateTime();exam.finishedAt=expired?exam.startedAt+EXAM_MS:Date.now();exam.reason=expired?'Temps écoulé':'Remise anticipée';saveExam();syncExamUI();window.scrollTo(0,0)}
-function renderExamReport(){
-  if(!exam?.finishedAt)return;
-  const total=qs.reduce((n,q)=>n+q.points,0);
-  const achieved=score(),answered=qs.filter(q=>state.answers[q.id]).length;
-  const correct=qs.filter(q=>state.answers[q.id]?.correct).length;
-  const grade=(achieved/total*20).toFixed(2).replace('.',',');
-  const elapsed=clockText(exam.finishedAt-exam.startedAt);
-  const esc=escapeHTML;
-  const detail=qs.map((q,i)=>{
-    const a=state.answers[q.id];
-    const ok=!!a?.correct;
-    const status=!a?'Non répondu':ok?'Correct':'Incorrect';
-    const answer=a?presentAnswer(q,a.value):'Aucune réponse enregistrée';
-    return '<article class="report-card '+(ok?'ok':'')+'"><h3>Question '+(i+1)+' — '+esc(q.title)+' ('+esc(q.ref)+')</h3><p><b>Résultat :</b> '+status+' — '+(ok?q.points:0)+' / '+q.points+' point(s)</p><p><b>Énoncé :</b> '+esc(q.question)+'</p><p><b>Réponse de l’apprenti :</b> '+answer+'</p><p><b>Réponse attendue :</b> '+correctAnswer(q)+'</p><p><b>Correction expliquée :</b> '+esc(q.correction)+'</p></article>';
-  }).join('');
-  $('finalReport').innerHTML='<div class="report-controls"><button class="btn" onclick="window.print()">🖨️ Exporter en PDF / Imprimer</button><span>Dans la fenêtre d’impression, choisir « Enregistrer au format PDF ».</span></div><h1>BLACKOUT BTS — Bilan de l’évaluation</h1><div class="summary-meta"><div><b>Apprenti :</b> '+esc(exam.student)+'</div><div><b>Début :</b> '+esc(new Date(exam.startedAt).toLocaleString('fr-FR'))+'</div><div><b>Fin :</b> '+esc(new Date(exam.finishedAt).toLocaleString('fr-FR'))+'</div><div><b>Durée :</b> '+elapsed+' / 03:00:00</div><div><b>Fin :</b> '+esc(exam.reason)+'</div></div><h2>Note indicative : '+grade+' / 20</h2><p><b>Points :</b> '+achieved+' / '+total+' — <b>Réponses :</b> '+answered+' / '+qs.length+' — <b>Correctes :</b> '+correct+' — <b>Incorrectes :</b> '+(answered-correct)+' — <b>Non répondues :</b> '+(qs.length-answered)+'</p><p>Note établie sur l’ensemble des questions de cette version pédagogique du BTS blanc. Toutes les questions non traitées sont notées zéro. Rapport conservé localement dans ce navigateur.</p><h2>Détail des réponses et corrigé argumenté</h2>'+detail;
-}
 
+function renderExamReport(){
+ if(!exam?.finishedAt)return;
+ const total=qs.reduce((n,q)=>n+q.points,0);
+ const achieved=score();
+ const answered=qs.filter(q=>state.answers[q.id]).length;
+ const correct=qs.filter(q=>state.answers[q.id]?.correct).length;
+ const grade=(20*achieved/total).toFixed(2).replace('.',',');
+ const timeSpent=exam.timeByQuestion||{};
+ const formatDuration=ms=>{const n=Math.floor(Math.max(0,ms)/1000);return Math.floor(n/60)+' min '+String(n%60).padStart(2,'0')+' s'};
+ const elapsed=clockText(exam.finishedAt-exam.startedAt);
+ const esc=escapeHTML;
+ const heading=['Fonctionnement du système','Pneumatique','Sécurité industrielle','Motoréducteur et mécanique','Distribution électrique','Variateurs et commande'];
+ const group=Array.from({length:6},(_,i)=>{
+  const filtered=qs.filter(q=>q.mission===i+1),maximum=filtered.reduce((a,q)=>a+q.points,0),earned=filtered.reduce((a,q)=>a+(state.answers[q.id]?.correct?q.points:0),0);
+  const misses=filtered.filter(q=>!state.answers[q.id]?.correct).length;
+  const duration=filtered.reduce((n,q)=>n+(timeSpent[q.id]||0),0);
+  return {name:heading[i],mission:i+1,max:maximum,earned,misses,duration,ratio:maximum?earned/maximum:1};
+ });
+ const flagged=qs.filter(q=>state.marked?.[q.id]);
+ const top=group.filter(g=>g.misses>0).sort((a,b)=>a.ratio-b.ratio||b.misses-a.misses).slice(0,5);
+ const priorities=top.map((g,i)=>'<li><strong>'+esc(g.name)+'</strong> — '+g.earned+'/'+g.max+' points. Revoir les questions manquées de cette mission.</li>').join('');
+ const cover='<section class="report-cover"><p style="letter-spacing:2px;font-weight:800;color:#366682">PROMEO — SUPPORT PÉDAGOGIQUE</p><h1>BLACKOUT BTS</h1><h2>Bilan individuel de l’évaluation</h2><p style="font-size:23px"><b>'+esc(exam.student)+'</b></p><div class="summary-meta"><div><b>Début :</b> '+esc(new Date(exam.startedAt).toLocaleString('fr-FR'))+'</div><div><b>Fin :</b> '+esc(new Date(exam.finishedAt).toLocaleString('fr-FR'))+'</div><div><b>Temps utilisé :</b> '+elapsed+'</div><div><b>Motif :</b> '+esc(exam.reason)+'</div></div><h2 style="font-size:40px">'+grade+' / 20</h2><p><b>'+achieved+' / '+total+' points</b> · '+answered+' / '+qs.length+' réponses · '+correct+' correctes · '+(answered-correct)+' incorrectes · '+(qs.length-answered)+' sans réponse</p><p>Note indicative du jeu pédagogique, distincte du barème de l’épreuve officielle. Document créé dans le navigateur de l’apprenti.</p></section>';
+ const rows=group.map(g=>'<div class="report-mission"><strong>Mission '+g.mission+' — '+esc(g.name)+'</strong><p><b>'+g.earned+' / '+g.max+' points</b> · '+(g.ratio*100).toFixed(0)+' % de réussite · '+g.misses+' questions manquées · Temps actif : '+formatDuration(g.duration)+'</p></div>').join('');
+ const detail=qs.map((q,i)=>{
+  const a=state.answers[q.id],ok=!!a?.correct,status=!a?'Non répondu':ok?'Correct':'Incorrect';
+  return '<article class="report-card '+(ok?'ok':'')+'"><h3>Question '+(i+1)+' — '+esc(q.title)+' ('+esc(q.ref)+')</h3><p><b>Mission :</b> '+q.mission+' · <b>Résultat :</b> '+status+' — '+(ok?q.points:0)+' / '+q.points+' pt(s) · <b>Temps actif :</b> '+formatDuration(timeSpent[q.id]||0)+(state.marked?.[q.id]?' · ⚑ Marquée à revoir':'')+'</p><p><b>Énoncé :</b> '+esc(q.question)+'</p><p><b>Réponse saisie :</b> '+(a?presentAnswer(q,a.value):'Aucune réponse enregistrée')+'</p><p><b>Réponse attendue :</b> '+correctAnswer(q)+'</p><p><b>Explication :</b> '+esc(q.correction)+'</p></article>';
+ }).join('');
+ const conclusion='<section class="report-priorities"><h2>5 notions prioritaires à réviser</h2>'+(top.length?'<ol>'+priorities+'</ol>':'<p>Aucune difficulté détectée dans les réponses validées.</p>')+'<p><b>Questions marquées à revoir :</b> '+(flagged.length?flagged.map(q=>esc(q.ref+' — '+q.title)).join(' ; '):'Aucune')+'</p><p>Conseil : reprendre les documents techniques associés aux erreurs puis refaire les calculs avec justification des unités et des hypothèses.</p></section>';
+ $('finalReport').innerHTML='<div class="report-controls"><button class="btn" onclick="window.print()">🖨️ Exporter en PDF / Imprimer</button><span>Choisir « Enregistrer au format PDF » dans la fenêtre d’impression.</span></div>'+cover+'<section><h2>Résultats par mission</h2>'+rows+'<p><b>Temps actif suivi :</b> '+formatDuration(Object.values(timeSpent).reduce((a,b)=>a+b,0))+' (temps visible sur les questions ; le chronomètre général continue même en changeant d’onglet).</p></section><h2>Copie corrigée — '+qs.length+' questions</h2>'+detail+conclusion;
+}
 function score(){return qs.reduce((n,q)=>n+(state.answers[q.id]?.correct?q.points:0),0)}
 function result(q,val){if(q.type==='number'){let n=Number(String(val).replace(',','.'));return Number.isFinite(n)&&Math.abs(n-q.answer)<=q.tolerance}if(q.type==='choice')return val===q.answer;return JSON.stringify(val)===JSON.stringify(q.answer)}
 function render(){if(!checkExam())return;state.drafts ||= {};state.marked ||= {};let q=qs[state.idx],done=state.answers[q.id],completed=qs.filter(x=>state.answers[x.id]).length; document.getElementById('scorePill').innerHTML='📝 <strong>'+completed+'</strong> / '+qs.length+' réponses';document.querySelectorAll('.headstat .pill')[2].innerHTML='📍 <strong id="missionnum">'+(state.idx+1)+'</strong> / '+qs.length;$('progresslabel').textContent=Math.round(completed/qs.length*100)+' %';$('progressbar').style.width=completed/qs.length*100+'%';$('qtitle').textContent='MISSION '+q.mission+' — '+q.title;$('context').textContent=q.context; if(q.doc) $('context').textContent += '  • Document : page '+q.doc+' du sujet (accessible à droite).';$('steps').innerHTML=qs.map((x,i)=>`<button class="step ${i===state.idx?'active':''} ${state.answers[x.id]?'done':''} ${state.marked?.[x.id]?'review':''}" onclick="go(${i})">${state.answers[x.id]?'✓ ':state.marked?.[x.id]?'⚑ ':''}${i===5?'M2 · ':i===14?'M3 · ':i===19?'M4 · ':i===28?'M5 · ':i===42?'M6 · ':''}${i+1}</button>`).join('');let b=`<div class="smalltitle" style="margin-top:21px">${q.ref} · ${q.points} points</div><div class="question">${q.question}</div>`;b+=quickDocsForQuestion(q);

@@ -35,6 +35,35 @@ const M2SCORE=qs.filter(q=>q.mission===2).reduce((sum,q)=>sum+q.points,0);
 let sequenceOrder=['auto','unlock','init'];
 const KEY='blackout_feige_m1_v1';let state={idx:0,answers:{}};try{let saved=JSON.parse(localStorage.getItem(KEY));if(saved&&saved.answers)state=saved}catch(e){}
 const $=id=>document.getElementById(id),save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};
+
+const EXAM_KEY='blackout_bts_exam_3h_v1', EXAM_MS=10800000;
+let exam=null;
+try{exam=JSON.parse(localStorage.getItem(EXAM_KEY))||null}catch(e){}
+function saveExam(){try{localStorage.setItem(EXAM_KEY,JSON.stringify(exam))}catch(e){}}
+function clockText(ms){const n=Math.max(0,Math.ceil(ms/1000));return [Math.floor(n/3600),Math.floor(n%3600/60),n%60].map(v=>String(v).padStart(2,'0')).join(':')}
+function checkExam(){if(!exam||!exam.startedAt||exam.finishedAt)return false;if(Date.now()>=exam.startedAt+EXAM_MS){finishExam(true);return false}return true}
+function beginExam(){if(exam?.startedAt)return;const student=$('studentName').value.trim().replace(/\s+/g,' ');if(student.length<3){alert('Saisis ton nom et ton prénom.');return}exam={student,startedAt:Date.now(),finishedAt:null,reason:''};state={idx:0,answers:{}};sequenceOrder=['auto','unlock','init'];save();saveExam();syncExamUI();render()}
+function tickClock(){if(!exam?.startedAt){$('examClock').textContent='03:00:00';return}if(!exam.finishedAt&&Date.now()>=exam.startedAt+EXAM_MS){finishExam(true);return}const remaining=exam.finishedAt?0:Math.max(0,exam.startedAt+EXAM_MS-Date.now());$('examClock').textContent=exam.finishedAt?'TERMINÉ':clockText(remaining);$('timerPill').classList.toggle('urgent',!exam.finishedAt&&remaining<=600000)}
+function syncExamUI(){document.body.className=!exam?.startedAt?'exam-pending':exam.finishedAt?'exam-finished':'exam-active';if(exam?.finishedAt)renderExamReport();tickClock()}
+function finishExam(expired){if(!exam?.startedAt||exam.finishedAt)return;if(!expired&&!confirm('Rendre ta copie définitivement ? Les questions non répondues vaudront 0 point.'))return;exam.finishedAt=expired?exam.startedAt+EXAM_MS:Date.now();exam.reason=expired?'Temps écoulé':'Remise anticipée';saveExam();syncExamUI();window.scrollTo(0,0)}
+function renderExamReport(){
+  if(!exam?.finishedAt)return;
+  const total=qs.reduce((n,q)=>n+q.points,0);
+  const achieved=score(),answered=qs.filter(q=>state.answers[q.id]).length;
+  const correct=qs.filter(q=>state.answers[q.id]?.correct).length;
+  const grade=(achieved/total*20).toFixed(2).replace('.',',');
+  const elapsed=clockText(exam.finishedAt-exam.startedAt);
+  const esc=escapeHTML;
+  const detail=qs.map((q,i)=>{
+    const a=state.answers[q.id];
+    const ok=!!a?.correct;
+    const status=!a?'Non répondu':ok?'Correct':'Incorrect';
+    const answer=a?presentAnswer(q,a.value):'Aucune réponse enregistrée';
+    return '<article class="report-card '+(ok?'ok':'')+'"><h3>Question '+(i+1)+' — '+esc(q.title)+' ('+esc(q.ref)+')</h3><p><b>Résultat :</b> '+status+' — '+(ok?q.points:0)+' / '+q.points+' point(s)</p><p><b>Énoncé :</b> '+esc(q.question)+'</p><p><b>Réponse de l’apprenti :</b> '+answer+'</p><p><b>Réponse attendue :</b> '+correctAnswer(q)+'</p><p><b>Correction expliquée :</b> '+esc(q.correction)+'</p></article>';
+  }).join('');
+  $('finalReport').innerHTML='<div class="report-controls"><button class="btn" onclick="window.print()">🖨️ Exporter en PDF / Imprimer</button><span>Dans la fenêtre d’impression, choisir « Enregistrer au format PDF ».</span></div><h1>BLACKOUT BTS — Bilan de l’évaluation</h1><div class="summary-meta"><div><b>Apprenti :</b> '+esc(exam.student)+'</div><div><b>Début :</b> '+esc(new Date(exam.startedAt).toLocaleString('fr-FR'))+'</div><div><b>Fin :</b> '+esc(new Date(exam.finishedAt).toLocaleString('fr-FR'))+'</div><div><b>Durée :</b> '+elapsed+' / 03:00:00</div><div><b>Fin :</b> '+esc(exam.reason)+'</div></div><h2>Note indicative : '+grade+' / 20</h2><p><b>Points :</b> '+achieved+' / '+total+' — <b>Réponses :</b> '+answered+' / '+qs.length+' — <b>Correctes :</b> '+correct+' — <b>Incorrectes :</b> '+(answered-correct)+' — <b>Non répondues :</b> '+(qs.length-answered)+'</p><p>Note établie sur l’ensemble des questions de cette version pédagogique du BTS blanc. Toutes les questions non traitées sont notées zéro. Rapport conservé localement dans ce navigateur.</p><h2>Détail des réponses et corrigé argumenté</h2>'+detail;
+}
+
 function score(){return qs.reduce((n,q)=>n+(state.answers[q.id]?.correct?q.points:0),0)}
 function result(q,val){if(q.type==='number'){let n=Number(String(val).replace(',','.'));return Number.isFinite(n)&&Math.abs(n-q.answer)<=q.tolerance}if(q.type==='choice')return val===q.answer;return JSON.stringify(val)===JSON.stringify(q.answer)}
 function render(){let q=qs[state.idx],done=state.answers[q.id],completed=qs.filter(x=>state.answers[x.id]).length; $('score').textContent=score();document.querySelector('.headstat .pill').innerHTML='⭐ <strong id="score">'+score()+'</strong> / '+MAXSCORE+' pts';$('missionnum').textContent=state.idx+1;document.querySelectorAll('.headstat .pill')[1].innerHTML='📍 <strong id="missionnum">'+(state.idx+1)+'</strong> / '+qs.length;$('progresslabel').textContent=Math.round(completed/qs.length*100)+' %';$('progressbar').style.width=completed/qs.length*100+'%';$('qtitle').textContent='MISSION '+q.mission+' — '+q.title;$('context').textContent=q.context; if(q.doc) $('context').textContent += '  • Document : page '+q.doc+' du sujet (accessible à droite).';$('steps').innerHTML=qs.map((x,i)=>`<button class="step ${i===state.idx?'active':''} ${state.answers[x.id]?'done':''}" onclick="go(${i})">${state.answers[x.id]?'✓ ':''}${i===5?'M2 · ':i===14?'M3 · ':i===19?'M4 · ':i===28?'M5 · ':i===42?'M6 · ':''}${i+1}</button>`).join('');let b=`<div class="smalltitle" style="margin-top:21px">${q.ref} · ${q.points} points</div><div class="question">${q.question}</div>`;b+=quickDocsForQuestion(q);

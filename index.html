@@ -66,12 +66,12 @@ function renderExamReport(){
 
 function score(){return qs.reduce((n,q)=>n+(state.answers[q.id]?.correct?q.points:0),0)}
 function result(q,val){if(q.type==='number'){let n=Number(String(val).replace(',','.'));return Number.isFinite(n)&&Math.abs(n-q.answer)<=q.tolerance}if(q.type==='choice')return val===q.answer;return JSON.stringify(val)===JSON.stringify(q.answer)}
-function render(){if(!checkExam())return;const currentIndex=state.idx;let q=qs[state.idx],done=state.answers[q.id],completed=qs.filter(x=>state.answers[x.id]).length; document.getElementById('scorePill').innerHTML='📝 <strong>'+completed+'</strong> / '+qs.length+' réponses';document.querySelectorAll('.headstat .pill')[2].innerHTML='📍 <strong id="missionnum">'+(state.idx+1)+'</strong> / '+qs.length;$('progresslabel').textContent=Math.round(completed/qs.length*100)+' %';$('progressbar').style.width=completed/qs.length*100+'%';$('qtitle').textContent='MISSION '+q.mission+' — '+q.title;$('context').textContent=q.context; if(q.doc) $('context').textContent += '  • Document : page '+q.doc+' du sujet (accessible à droite).';$('steps').innerHTML=qs.map((x,i)=>`<button class="step ${i===state.idx?'active':''} ${state.answers[x.id]?'done':''} ${state.marked?.[x.id]?'review':''}" onclick="go(${i})">${state.answers[x.id]?'✓ ':state.marked?.[x.id]?'⚑ ':''}${i===5?'M2 · ':i===14?'M3 · ':i===19?'M4 · ':i===28?'M5 · ':i===42?'M6 · ':''}${i+1}</button>`).join('');let b=`<div class="smalltitle" style="margin-top:21px">${q.ref} · ${q.points} points</div><div class="question">${q.question}</div>`;b+=quickDocsForQuestion(q);
+function render(){if(!checkExam())return;state.drafts ||= {};state.marked ||= {};let q=qs[state.idx],done=state.answers[q.id],completed=qs.filter(x=>state.answers[x.id]).length; document.getElementById('scorePill').innerHTML='📝 <strong>'+completed+'</strong> / '+qs.length+' réponses';document.querySelectorAll('.headstat .pill')[2].innerHTML='📍 <strong id="missionnum">'+(state.idx+1)+'</strong> / '+qs.length;$('progresslabel').textContent=Math.round(completed/qs.length*100)+' %';$('progressbar').style.width=completed/qs.length*100+'%';$('qtitle').textContent='MISSION '+q.mission+' — '+q.title;$('context').textContent=q.context; if(q.doc) $('context').textContent += '  • Document : page '+q.doc+' du sujet (accessible à droite).';$('steps').innerHTML=qs.map((x,i)=>`<button class="step ${i===state.idx?'active':''} ${state.answers[x.id]?'done':''} ${state.marked?.[x.id]?'review':''}" onclick="go(${i})">${state.answers[x.id]?'✓ ':state.marked?.[x.id]?'⚑ ':''}${i===5?'M2 · ':i===14?'M3 · ':i===19?'M4 · ':i===28?'M5 · ':i===42?'M6 · ':''}${i+1}</button>`).join('');let b=`<div class="smalltitle" style="margin-top:21px">${q.ref} · ${q.points} points</div><div class="question">${q.question}</div>`;b+=quickDocsForQuestion(q);
 if(q.mission===2 && (q.id==='m2-force'||q.id==='m2-pressure'))b+=`<div class="phase">🔬 Données d'étude : diamètre piston 25 mm, alimentation initiale 10 bar, effort maximal autorisé 150 N. Consulte DQ2 (énoncé) et DT2 (schéma).</div>`;
 if(q.type==='number')b+=`<div class="unitrow"><input class="input" type="text" inputmode="decimal" id="ans" placeholder="Résultat provisoire" value="${escapeHTML(state.drafts?.[q.id]?.value??'')}" oninput="captureDraft()"><span class="unit">${q.unit}</span></div>`;
 if(q.type==='choice')b+=`<div class="answergrid">${q.options.map(([v,t])=>`<label class="choice"><input type="radio" name="pick" value="${v}" onchange="captureDraft()" ${state.drafts?.[q.id]?.value===v?'checked':''}><span>${t}</span></label>`).join('')}</div>`;
 if(q.type==='sequence'){
-  let vals=state.drafts?.[q.id]?.value||sequenceOrder;
+  let vals=state.drafts?.[q.id]?.value||sequenceOrder;sequenceOrder=[...vals];
   b+=`<p class="muted">Place les trois actions dans le bon ordre avec les flèches. Ensuite, valide ta réponse.</p><div class="sequence-list">`;
   for(let i=0;i<vals.length;i++){
     const item=q.options.find(x=>x[0]===vals[i]);
@@ -79,16 +79,75 @@ if(q.type==='sequence'){
   }
   b+='</div>';
 }
-$('qbody').innerHTML=b;let actions=done?'':`<button class="btn" onclick="validate()">⚡ Valider ma réponse</button>`;if(state.idx>0)actions+=`<button class="btn secondary" onclick="go(${state.idx-1})">← Précédent</button>`;if(!done&&state.idx<qs.length-1)actions+=`<button class="btn secondary" onclick="go(${state.idx+1})">Passer pour le moment →</button>`;if(done&&state.idx<qs.length-1)actions+=`<button class="btn" onclick="go(${state.idx+1})">Question suivante →</button>`;if(state.idx===qs.length-1)actions+=`<button class="btn secondary" onclick="finishExam(false)">📩 Rendre ma copie</button>`;$('actions').innerHTML=actions;
-$('feedback').innerHTML=done?'<div class="feedback good"><h3>✓ Réponse enregistrée</h3><p>La note et la correction seront affichées à la fin de l’évaluation.</p></div>':'';}
+
+$('qbody').innerHTML=b;
+const flagged=!!state.marked[q.id];
+$('qbody').insertAdjacentHTML('beforeend','<div class="draftbar"><button class="btn secondary '+(flagged?'marked':'')+'" onclick="toggleReview()">'+(flagged?'⚑ À revoir ✓':'⚑ Marquer à revoir')+'</button><span class="draftstatus" id="draftStatus">'+(state.drafts[q.id]?'Brouillon enregistré automatiquement':'Saisie enregistrée automatiquement')+'</span></div>');
+let actions='';
+if(state.idx>0)actions+='<button class="btn secondary" onclick="go('+(state.idx-1)+')">← Précédent</button>';
+actions+='<button class="btn secondary" onclick="validate()">✓ Enregistrer ma réponse</button>';
+if(state.idx<qs.length-1)actions+='<button class="btn" onclick="go('+(state.idx+1)+')">Question suivante →</button>';
+actions+='<button class="btn secondary" onclick="goNextFlagged()">⚑ Questions à revoir ('+Object.keys(state.marked).filter(id=>state.marked[id]).length+')</button>';
+if(state.idx===qs.length-1)actions+='<button class="btn secondary" onclick="finishExam(false)">📩 Rendre ma copie</button>';
+$('actions').innerHTML=actions;
+$('feedback').innerHTML=done?'<div class="feedback good">✓ Réponse enregistrée. Tu peux la modifier jusqu’à la remise.</div>':'';
+}
 
 
 function pressureSim(){return `<div class="phase"><b>🔬 Banc d'essai virtuel : pression et effort</b><p>Après la correction, fais varier la pression pour voir si la limite de 150 N est respectée.</p><label for="pressureRange">Pression d'alimentation : <strong id="pressureValue">10,0 bar</strong></label><input id="pressureRange" type="range" min="0" max="10" value="10" step="0.1" oninput="updatePressureSim()" style="width:100%;margin:12px 0"><div id="forceValue" style="font-weight:800;font-size:21px"></div><div id="forceStatus"></div><p class="muted">Simulation pédagogique : F = P × π × d² / 4, d = 25 mm, sans pertes ni frottements.</p></div>`}
 function updatePressureSim(){const el=$('pressureRange');if(!el)return;const p=Number(el.value),f=p*100000*Math.PI*(.025*.025)/4;$('pressureValue').textContent=p.toFixed(1).replace('.',',')+' bar';$('forceValue').textContent='Effort théorique : '+f.toFixed(1).replace('.',',')+' N';$('forceStatus').innerHTML=f<=150?'<span style="color:#62dfac">✅ Limite de 150 N respectée</span>':'<span style="color:#ff8e83">⚠️ Risque : effort supérieur à 150 N</span>'}
 
-function moveSequence(i,delta){if(!checkExam())return;if(state.answers.restart)return;const j=i+delta;if(j<0||j>=sequenceOrder.length)return;[sequenceOrder[i],sequenceOrder[j]]=[sequenceOrder[j],sequenceOrder[i]];render()}
-function go(i){if(!checkExam())return;state.idx=Math.max(0,Math.min(qs.length-1,i));save();render()}
-function validate(){if(!checkExam())return;let q=qs[state.idx],value;if(q.type==='number'){value=$('ans').value.trim();if(value===''||!Number.isFinite(Number(value.replace(',','.')))){alert('Entre une valeur numérique avant de valider.');return}}else if(q.type==='choice'){value=document.querySelector('input[name="pick"]:checked')?.value;if(!value){alert('Choisis une réponse avant de valider.');return}}else{value=[...sequenceOrder]}if(state.answers[q.id])return;state.answers[q.id]={value,correct:result(q,value)};save();render()}
+
+function captureDraft(){
+ if(!exam?.startedAt||exam.finishedAt)return;
+ const q=qs[state.idx];state.drafts ||= {};
+ let value=null;
+ if(q.type==='number')value=$('ans')?.value??'';
+ else if(q.type==='choice')value=document.querySelector('input[name="pick"]:checked')?.value??null;
+ else value=[...sequenceOrder];
+ if(value===null||value===''){delete state.drafts[q.id];delete state.answers[q.id]}
+ else {state.drafts[q.id]={value};if(q.type==='number'&&Number.isFinite(Number(String(value).replace(',','.'))))state.answers[q.id]={value,correct:result(q,value)};
+ else if(q.type==='choice')state.answers[q.id]={value,correct:result(q,value)};
+ else if(q.type==='sequence')state.answers[q.id]={value,correct:result(q,value)};
+ else delete state.answers[q.id]}
+ save();
+ const status=$('draftStatus');if(status)status.textContent='✓ Brouillon enregistré';
+}
+function toggleReview(){
+ if(!checkExam())return;
+ captureDraft();state.marked ||= {};
+ const id=qs[state.idx].id;
+ if(state.marked[id])delete state.marked[id];else state.marked[id]=true;
+ save();render();
+}
+function goNextFlagged(){
+ if(!checkExam())return;
+ const ids=qs.map((q,i)=>state.marked?.[q.id]?i:-1).filter(i=>i>=0);
+ if(!ids.length){alert('Aucune question marquée à revoir.');return}
+ const next=ids.find(i=>i>state.idx)??ids[0];go(next);
+}
+function moveSequence(i,delta){
+ if(!checkExam())return;
+ const j=i+delta;
+ if(j<0||j>=sequenceOrder.length)return;
+ [sequenceOrder[i],sequenceOrder[j]]=[sequenceOrder[j],sequenceOrder[i]];
+ captureDraft();render();
+}
+function go(i){
+ if(!checkExam())return;
+ captureDraft();
+ const target=Math.max(0,Math.min(qs.length-1,i));
+ if(target!==state.idx)switchTrackedQuestion(target);
+ state.idx=target;save();render();
+}
+function validate(){
+ if(!checkExam())return;
+ captureDraft();
+ const q=qs[state.idx];
+ if(!state.answers[q.id]){alert('Saisis une réponse valide avant de l’enregistrer. Tu peux aussi passer cette question.');return}
+ const status=$('draftStatus');if(status)status.textContent='✓ Réponse enregistrée — modifiable';
+ render();
+}
 function escapeHTML(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
 function presentAnswer(q,value){
   if(value===undefined||value===null)return 'Aucune réponse enregistrée';

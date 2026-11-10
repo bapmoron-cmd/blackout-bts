@@ -202,7 +202,7 @@ function showSummary(onlyMission){if(!exam?.finishedAt)return;
 }
 function resetGame(){alert('Réinitialisation indisponible pendant cette évaluation. Demande au formateur une nouvelle session.')}
 
-const FULL_DOCS={"6":"assets/document_05.jpg","7":"assets/document_06.jpg","8":"assets/document_07.jpg","9":"assets/document_08.jpg","10":"assets/document_09.jpg","11":"assets/document_10.jpg","12":"assets/document_11.jpg","14":"assets/document_12.jpg","15":"assets/document_13.jpg","16":"assets/document_14.jpg","18":"assets/document_16.jpg","19":"assets/document_17.jpg","20":"assets/document_18.jpg","21":"assets/document_19.jpg","22":"assets/document_20.jpg","23":"assets/document_21.jpg","24":"assets/document_22.jpg","25":"assets/document_23.jpg","26":"assets/document_24.jpg","27":"assets/document_25.jpg"};
+const FULL_DOCS={"6":"assets/document_05.jpg","7":"assets/document_06.jpg","8":"assets/document_07.jpg","9":"assets/document_08.jpg","10":"assets/document_09.jpg","11":"assets/document_10.jpg","12":"assets/document_11.jpg","14":"assets/document_13.jpg","15":"assets/document_14.jpg","18":"assets/document_16.jpg","19":"assets/document_17.jpg","20":"assets/document_18.jpg","21":"assets/document_19.jpg","22":"assets/document_20.jpg","23":"assets/document_21.jpg","24":"assets/document_22.jpg","25":"assets/document_23.jpg","26":"assets/document_24.jpg","27":"assets/document_25.jpg"};
 let docRotation=0;function rotateDoc(deg){docRotation=(docRotation+deg+360)%360;const img=$('docimage');img.style.transform='rotate('+docRotation+'deg)';if(docRotation%180!==0){$('modal').classList.add('zoom');} }function toggleDocZoom(){$('modal').classList.toggle('zoom')}function resetDocView(){docRotation=0;$('docimage').style.transform='';$('modal').classList.remove('zoom')}
 // DOCUMENTATION : sources séparées par dossier, sans réutiliser le numéro de page comme identifiant de mission.
 const OFFICIAL_SOURCE_URL='https://sti.eduscol.education.fr/concours_examens/epreuve-e4-bts-ms-option-sp-nouvelle-caledonie-novembre-2022';
@@ -224,10 +224,12 @@ function docButtonForSource(key){
 }
 function docButtonForPage(page){
   if(!usablePage(page))return '';
-  return '<button type="button" class="docbtn" onclick="showFullDoc('+Number(page)+')">📄 Page '+Number(page)+'</button>';
+  return '<button type="button" class="docbtn" onclick="showFullDoc('+Number(page)+')">📄 '+escapeHTML(DOCUMENT_LABELS[page]||'Page '+page)+'</button>';
 }
 // Pages de garde du sujet : elles ne doivent jamais être proposées comme schémas utiles.
 const COVER_PAGES=new Set([13,17]);
+const DOCUMENT_LABELS={14:'DR1 / DR2 — réponses et motoréducteur',15:'DR3 / DR4 — schémas et calculs',18:'DT1 / DT2 — chronogramme et pneumatique',19:'DT3 / DT4 — GEMMA et relais PILZ',20:'DT5 à DT7 — circuits de sécurité',21:'DT8 / DT9 — alimentation et distribution',22:'DT10 / DT11 — Vigilohm et CPI',23:'DT12 / DT13 — détecteurs et tores',24:'DT14 / DT15 — disjoncteur et chute de tension',25:'DT16 / DT17 — court-circuit et variateur',26:'DT18 / DT19 — contacteurs et câblages',27:'DT20 — commande variateur et pompe'};
+const MISSING_DOC_PAGES={16:'Documents réponses DR5 / DR6 absents des fichiers publiés'};
 function usablePage(page){return Boolean(FULL_DOCS[page])&&!COVER_PAGES.has(Number(page));}
 function pagesForDossier(number){
   return [...new Set(qs.filter(q=>q.mission===number).flatMap(q=>(q.docPages|| (q.doc?[q.doc]:[])).map(Number)).filter(p=>usablePage(p)))].sort((a,b)=>a-b);
@@ -244,10 +246,11 @@ function renderDocumentDirectory(current){
 function quickDocsForQuestion(q){
   const keys=DOSSIER_SOURCE[q.mission]||[];
   const pages=[...new Set((q.docPages|| (q.doc?[q.doc]:[])).filter(p=>usablePage(p)))];
-  if(!keys.length&&!pages.length)return '<p class="muted">Aucun document utile vérifié pour cette question. Référence à contrôler sur le sujet officiel.</p>';
+  if(!keys.length&&!pages.length)return '<p class="muted">Aucun document utile disponible pour cette question : référence à contrôler sur le sujet officiel.</p>';
+  const missing=(q.docPages||[]).filter(p=>MISSING_DOC_PAGES[p]);
   return '<div class="quickdocs"><strong style="width:100%">📚 Documents du dossier '+q.mission+'</strong>'+
     keys.map(key=>'<button type="button" onclick="showDoc(\''+key+'\')">'+escapeHTML(SOURCE_DOCS[key].label)+'</button>').join('')+
-    pages.map(p=>'<button type="button" onclick="showFullDoc('+Number(p)+')">Page '+Number(p)+'</button>').join('')+'</div>';
+    pages.map(p=>'<button type="button" onclick="showFullDoc('+Number(p)+')">'+escapeHTML(DOCUMENT_LABELS[p]||'Page '+p)+'</button>').join('')+missing.map(p=>'<span style="color:#ffb3a5">⚠ '+escapeHTML(MISSING_DOC_PAGES[p])+'</span>').join('')+'</div>';
 }
 function openDocument(src,label){
   const modal=$('modal'),img=$('docimage');if(!src){alert('Ce document n’est pas disponible.');return;}
@@ -256,7 +259,7 @@ function openDocument(src,label){
   img.onload=()=>{if(activeDocSrc===src)$('docname').textContent=label;let notice=$('docError');if(notice)notice.remove();};
   modal.classList.add('open');img.src=src;
 }
-function showFullDoc(page){if(!usablePage(page)){alert('Cette page n’est pas disponible. Ouvre les documents DT/DQ associés au dossier.');return;}openDocument(FULL_DOCS[page],'Page '+page+' du document source');}
+function showFullDoc(page){if(!usablePage(page)){alert(MISSING_DOC_PAGES[page]||'Ce document n’est pas disponible. Consulte les autres documents du dossier.');return;}openDocument(FULL_DOCS[page],DOCUMENT_LABELS[page]||'Document source — repère '+page);}
 function showDoc(name){const d=SOURCE_DOCS[name];if(d)openDocument(d.src,d.label);}
 function closeDoc(){$('modal').classList.remove('open','zoom');resetDocView()}document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDoc()});document.addEventListener('visibilitychange',()=>{if(document.hidden)captureDraft();setTrackingVisibility()});window.addEventListener('pagehide',()=>{captureDraft();accumulateTime()});if(exam?.startedAt&&!exam.finishedAt){exam.trackingIndex=state.idx;exam.trackingAt=Date.now();saveExam()}syncExamUI();if(checkExam())render();setInterval(()=>{if(exam?.startedAt&&!exam.finishedAt)tickClock()},1000);
 </script></body></html>

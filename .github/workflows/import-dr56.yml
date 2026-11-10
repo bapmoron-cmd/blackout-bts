@@ -14,7 +14,7 @@ jobs:
       - name: Installer la conversion documentaire
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq libreoffice-writer poppler-utils python3-pymupdf
+          sudo apt-get install -y -qq libreoffice-writer poppler-utils
       - name: Télécharger le dossier candidat officiel Éduscol
         run: |
           curl --fail --location --retry 3 --retry-delay 3 \
@@ -27,22 +27,21 @@ jobs:
           test -s /tmp/feige.pdf
       - name: Repérer DR5 et DR6 sur les pages rendues
         run: |
-          /usr/bin/python3 - <<'PY'
-          import fitz,re,os
-          doc=fitz.open('/tmp/feige.pdf')
-          found=[]
-          for i,page in enumerate(doc):
-              t=page.get_text()
-              norm=re.sub(r'\s+',' ',t).upper()
-              if ('DR5' in norm or 'DR 5' in norm) and ('DR6' in norm or 'DR 6' in norm):
-                  found.append(i)
-          print('Pages ayant DR5 ET DR6:',[i+1 for i in found],'Total',len(doc))
-          if len(found)!=1: raise RuntimeError('Page DR5 DR6 non identifiable avec certitude, arrêt sans écriture')
-          page=doc[found[0]]
-          pix=page.get_pixmap(matrix=fitz.Matrix(2,2),alpha=False)
+          python3 - <<'PY'
+          import subprocess,re,os
+          pdf='/tmp/feige.pdf'
+          pagecount=int(subprocess.check_output(['pdfinfo',pdf],text=True).split('Pages:')[1].splitlines()[0].strip())
+          matched=[]
+          for i in range(1,pagecount+1):
+              t=subprocess.check_output(['pdftotext','-f',str(i),'-l',str(i),'-layout',pdf,'-'],text=True)
+              norm=re.sub(r'\\s+',' ',t).upper()
+              if re.search(r'\\bDR\\s*5\\b',norm) and re.search(r'\\bDR\\s*6\\b',norm):matched.append(i)
+          print('DR5 et DR6 trouvés aux pages PDF:',matched,'pages totales',pagecount,flush=True)
+          if len(matched)!=1:raise RuntimeError('Repérage ambigu ou introuvable : aucune image ajoutée')
           os.makedirs('assets',exist_ok=True)
-          pix.save('assets/dr5_dr6_officiel.png')
-          print('Image:',pix.width,'x',pix.height)
+          subprocess.run(['pdftoppm','-f',str(matched[0]),'-l',str(matched[0]),'-singlefile','-r','170','-png',pdf,'assets/dr5_dr6_officiel'],check=True)
+          assert os.path.getsize('assets/dr5_dr6_officiel.png')>30000
+          print('Image extraite, octets:',os.path.getsize('assets/dr5_dr6_officiel.png'),flush=True)
           PY
       - name: Publier l'image (sans toucher aux autres pages)
         run: |

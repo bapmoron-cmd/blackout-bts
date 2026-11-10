@@ -1,0 +1,52 @@
+name: Importer DR5 DR6 officiels
+on:
+  push:
+    paths:
+      - '.github/workflows/import-dr56.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import-documents:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installer la conversion documentaire
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libreoffice-writer poppler-utils python3-pymupdf
+      - name: Télécharger le dossier candidat officiel Éduscol
+        run: |
+          curl --fail --location --retry 3 --retry-delay 3 \
+            --user-agent 'Mozilla/5.0 (compatible; EducationalDocumentImport/1.0)' \
+            'https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/concours-examens/15561/15561-bts-ms-sp-e4-sujet-nc-2022-copie.docx' \
+            -o /tmp/feige.docx
+          file /tmp/feige.docx
+          test "$(stat -c%s /tmp/feige.docx)" -gt 10000
+          libreoffice -env:UserInstallation=file:///tmp/lo-feige-dr56 --headless --convert-to pdf --outdir /tmp /tmp/feige.docx
+          test -s /tmp/feige.pdf
+      - name: Repérer DR5 et DR6 sur les pages rendues
+        run: |
+          /usr/bin/python3 - <<'PY'
+          import fitz,re,os
+          doc=fitz.open('/tmp/feige.pdf')
+          found=[]
+          for i,page in enumerate(doc):
+              t=page.get_text()
+              norm=re.sub(r'\s+',' ',t).upper()
+              if ('DR5' in norm or 'DR 5' in norm) and ('DR6' in norm or 'DR 6' in norm):
+                  found.append(i)
+          print('Pages ayant DR5 ET DR6:',[i+1 for i in found],'Total',len(doc))
+          if len(found)!=1: raise RuntimeError('Page DR5 DR6 non identifiable avec certitude, arrêt sans écriture')
+          page=doc[found[0]]
+          pix=page.get_pixmap(matrix=fitz.Matrix(2,2),alpha=False)
+          os.makedirs('assets',exist_ok=True)
+          pix.save('assets/dr5_dr6_officiel.png')
+          print('Image:',pix.width,'x',pix.height)
+          PY
+      - name: Publier l'image (sans toucher aux autres pages)
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/dr5_dr6_officiel.png
+          git diff --cached --quiet || (git commit -m 'Ajouter DR5 DR6 depuis le sujet officiel FEIGE' && git push)

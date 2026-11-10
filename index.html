@@ -227,14 +227,14 @@ function docButtonForPage(page){
   return '<button type="button" class="docbtn" onclick="showFullDoc('+Number(page)+')">📄 Page '+Number(page)+'</button>';
 }
 // Pages de garde du sujet : elles ne doivent jamais être proposées comme schémas utiles.
-const COVER_PAGES=new Set([14,18]);
+const COVER_PAGES=new Set([18]);
 function usablePage(page){return Boolean(FULL_DOCS[page])&&!COVER_PAGES.has(Number(page));}
 function pagesForDossier(number){
   return [...new Set(qs.filter(q=>q.mission===number).flatMap(q=>(q.docPages|| (q.doc?[q.doc]:[])).map(Number)).filter(p=>usablePage(p)))].sort((a,b)=>a-b);
 }
 function renderDocumentDirectory(current){
   const holder=$('allDocs');if(!holder)return;
-  let html='<p class="muted" style="font-size:12px">Source : BTS MS option SP, E4, Nouvelle-Calédonie 2022 — FEIGE. Les pages de garde (14 et 18) sont masquées des accès rapides. <a target="_blank" rel="noopener" href="'+OFFICIAL_SOURCE_URL+'" style="color:#8edcf6">Voir le sujet officiel</a>.</p>';
+  let html='<p class="muted" style="font-size:12px">Source : BTS MS option SP, E4, Nouvelle-Calédonie 2022 — FEIGE. La page de garde technique (18) est masquée des accès rapides. <a target="_blank" rel="noopener" href="'+OFFICIAL_SOURCE_URL+'" style="color:#8edcf6">Voir le sujet officiel</a>.</p>';
   for(let m=1;m<=6;m++){
     let keys=DOSSIER_SOURCE[m]||[],pages=pagesForDossier(m);
     html+='<details '+(m===current.mission?'open':'')+' style="border:1px solid #31506a;border-radius:10px;padding:10px;margin-bottom:8px"><summary style="cursor:pointer;font-weight:800">Dossier '+m+' — '+qs.filter(q=>q.mission===m).length+' questions</summary><div style="display:grid;gap:7px;margin-top:10px">'+keys.map(docButtonForSource).join('')+pages.map(docButtonForPage).join('')+'</div></details>';
